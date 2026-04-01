@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Cables en Tubos Corrugados</title>
+<style>
+  :root {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #999;
+    --info-bg: #e6f1fb;
+    --info: #185fa5;
+    --warn-bg: #faeeda;
+    --warn: #854f0b;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+  header { background: #12122a; color: #e0e0f0; padding: 18px 32px; display: flex; align-items: center; gap: 14px; }
+  header svg { opacity: 0.8; }
+  header h1 { font-size: 18px; font-weight: 500; letter-spacing: 0.01em; }
+  header span { font-size: 12px; color: #888; margin-left: auto; }
+
+  .main { max-width: 960px; margin: 0 auto; padding: 24px 20px; display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+  @media(max-width:720px){ .main { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 20px; }
+  .panel h2 { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+
+  select, input[type=number] { width: 100%; padding: 8px 10px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-size: 14px; font-family: inherit; outline: none; }
+  select:focus, input:focus { border-color: var(--info); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+  select { margin-bottom: 8px; cursor: pointer; }
+
+  .add-row { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; }
+  .add-row label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+  .add-row input { width: 70px; }
+  .btn-add { flex: 1; padding: 8px 14px; background: #12122a; color: #e0e0f0; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: inherit; font-weight: 500; transition: background 0.15s; }
+  .btn-add:hover { background: #1e1e3e; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 5px 8px; font-size: 11px; font-weight: 600; color: var(--text3); border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.06em; }
+  td { padding: 7px 8px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .tag { background: var(--info-bg); color: var(--info); border-radius: 4px; padding: 1px 7px; font-size: 12px; font-weight: 600; }
+  .xbtn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 18px; line-height: 1; padding: 0 4px; border-radius: 3px; }
+  .xbtn:hover { color: #c0392b; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  .scard { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .scard .lbl { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+  .scard .val { font-size: 18px; font-weight: 600; }
+  .scard .unit { font-size: 12px; color: var(--text2); font-weight: 400; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tbtn { padding: 5px 15px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; font-size: 13px; color: var(--text2); font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .tbtn.active { background: var(--info-bg); color: var(--info); border-color: transparent; font-weight: 600; }
+  .tcnt { background: var(--surface2); border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+
+  .sols { display: flex; flex-direction: column; gap: 6px; }
+  .sol-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .sol-card.best { border: 1.5px solid var(--info); }
+  .sol-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.1s; }
+  .sol-header:hover { background: var(--surface2); }
+  .sol-info { flex: 1; min-width: 0; }
+  .sol-name { font-size: 14px; font-weight: 500; }
+  .sol-ref { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .badge { display: inline-block; background: var(--info-bg); color: var(--info); font-size: 11px; padding: 1px 7px; border-radius: 9px; margin-left: 6px; font-weight: 600; }
+  .sol-right { text-align: right; flex-shrink: 0; }
+  .pct { font-size: 20px; font-weight: 600; }
+  .pct-lbl { font-size: 11px; color: var(--text2); }
+  .bar { width: 80px; height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 4px; overflow: hidden; margin-left: auto; }
+  .barf { height: 100%; border-radius: 2px; }
+  .arrow { font-size: 14px; color: var(--text3); flex-shrink: 0; }
+
+  .diag-panel { background: #0f0f1e; padding: 14px 8px 12px; }
+  .diag-inner { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+  .legend { display: flex; gap: 14px; justify-content: center; padding-top: 8px; flex-wrap: wrap; }
+  .leg-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #888; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; opacity: 0.85; }
+  .diag-note { font-size: 11px; color: #555; text-align: center; margin-top: 6px; }
+
+  .nosol { padding: 12px 16px; background: var(--warn-bg); color: var(--warn); border-radius: var(--radius-sm); font-size: 14px; }
+  .empty { padding: 3rem 0; text-align: center; color: var(--text3); font-size: 14px; }
+  .norm-note { font-size: 11px; color: var(--text3); margin-top: 8px; line-height: 1.6; }
+</style>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:_dlc_DocId msdt:dt="string">KS4JFQSMZYH2-19-38184</mso:_dlc_DocId>
+<mso:_dlc_DocIdItemGuid msdt:dt="string">32e008f7-ddc5-4205-b907-dd4bc70a4304</mso:_dlc_DocIdItemGuid>
+<mso:_dlc_DocIdUrl msdt:dt="string">https://corp.himoshare.com/sitios/ingpro/Trabajodeproducto/_layouts/15/DocIdRedir.aspx?ID=KS4JFQSMZYH2-19-38184, KS4JFQSMZYH2-19-38184</mso:_dlc_DocIdUrl>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+
+<header>
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="14" r="13" stroke="#4a4a8a" stroke-width="1.5"/>
+    <circle cx="14" cy="14" r="9" stroke="#6a6aaa" stroke-width="1"/>
+    <circle cx="10" cy="11" r="2.5" fill="#1D9E75" opacity="0.9"/>
+    <circle cx="17" cy="10" r="2" fill="#1D9E75" opacity="0.9"/>
+    <circle cx="10" cy="17" r="1.8" fill="#4A90D9" opacity="0.9"/>
+    <circle cx="17" cy="17" r="2.2" fill="#4A90D9" opacity="0.9"/>
+    <circle cx="14" cy="13" r="1.5" fill="#EF9F27" opacity="0.9"/>
+  </svg>
+  <h1>Calculadora de Cables en Tubos Corrugados</h1>
+  <span>REBT · Factor llenado 33% / 50%</span>
+</header>
+
+<div class="main">
+  <!-- Panel izquierdo: entrada -->
+  <div>
+    <div class="panel">
+      <h2>Añadir cables</h2>
+      <select id="csel"></select>
+      <div class="add-row">
+        <label>Cantidad:</label>
+        <input type="number" id="qty" value="1" min="1" max="999" step="1">
+        <button class="btn-add" id="addBtn">+ Añadir</button>
+      </div>
+
+      <h2>Lista de cables</h2>
+      <div id="clist"><p style="color:var(--text3);font-size:13px;padding:8px 0">No hay cables añadidos.</p></div>
+    </div>
+  </div>
+
+  <!-- Panel derecho: resultados -->
+  <div id="results">
+    <div class="panel">
+      <div class="empty">Añade cables en el panel izquierdo para calcular las soluciones de tubo corrugado.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TUBES=[
+  {code:'3001320',name:'PG4,5-DN7NW4,5',d:4.8},{code:'3001352',name:'PG7-DN10NW8,5',d:8.4},
+  {code:'3001353',name:'PG9-DN13NW10',d:9.9},{code:'3001358',name:'PG11-DN16NW13',d:12.7},
+  {code:'3001346',name:'PG13-DN18NW14',d:14.2},{code:'3001347',name:'PG16-DN17NW17',d:16.6},
+  {code:'3001348',name:'PG21-DN28NW23',d:23.2},{code:'3001349',name:'PG29-DN34NW29',d:29},
+  {code:'3001350',name:'PG36-DN42NW37',d:36},{code:'3001351',name:'PG48-DN54NW50',d:47.7}
+];
+const CABLES=[
+  {code:'3095121',grp:0,label:'0,5 mm² TRI-RATED PVC',d:2.5},
+  {code:'3095122',grp:0,label:'0,75 mm² TRI-RATED PVC',d:2.7},
+  {code:'3069208',grp:0,label:'1 mm² TRI-RATED PVC',d:2.8},
+  {code:'3069209',grp:0,label:'1,5 mm² TRI-RATED PVC',d:3.0},
+  {code:'3069210',grp:0,label:'2,5 mm² TRI-RATED PVC',d:3.5},
+  {code:'3069211',grp:0,label:'4 mm² TRI-RATED PVC',d:4.0},
+  {code:'3069212',grp:0,label:'6 mm² TRI-RATED PVC',d:4.6},
+  {code:'3000991',grp:1,label:'10 mm² FLEX 450/750',d:6.2},
+  {code:'3000992',grp:1,label:'16 mm² FLEX 450/750',d:7.3},
+  {code:'3000994',grp:1,label:'25 mm² FLEX 450/750',d:8.8},
+  {code:'3000995',grp:1,label:'35 mm² FLEX 450/750',d:10.2},
+  {code:'3000997',grp:1,label:'50 mm² FLEX 450/750',d:12.0},
+  {code:'3000998',grp:1,label:'70 mm² FLEX 450/750',d:14.0},
+  {code:'3000999',grp:1,label:'95 mm² FLEX 450/750',d:16.2},
+  {code:'3033173',grp:2,label:'6 mm² FLEX 1,8/3kV EPR',d:7.9},
+  {code:'3033172',grp:2,label:'10 mm² FLEX 1,8/3kV EPR',d:9.5},
+  {code:'3031087',grp:2,label:'16 mm² FLEX 1,8/3kV EPR',d:10.5},
+  {code:'3033357',grp:2,label:'25 mm² FLEX 1,8/3kV EPR',d:12.8},
+  {code:'3024546',grp:2,label:'35 mm² FLEX 1,8/3kV EPR',d:14.1},
+  {code:'3023093',grp:2,label:'50 mm² FLEX 1,8/3kV EPR',d:15.9},
+  {code:'3027226',grp:2,label:'70 mm² FLEX 1,8/3kV EPR',d:17.8},
+  {code:'3021000',grp:2,label:'95 mm² FLEX 1,8/3kV EPR',d:20.1}
+];
+const GRP_NAMES=['CAB TRI-RATED NE PVC','CAB FLEX NE 450/750','CAB FLEX NE 1,8/3kV EPR'];
+const pi=Math.PI, tA=d=>pi*(d/2)**2;
+let items=[], tab=1, openDiag=null;
+
+// Construir select
+(function(){
+  const sel=document.getElementById('csel');
+  [0,1,2].forEach(g=>{
+    const og=document.createElement('optgroup');
+    og.label=GRP_NAMES[g];
+    CABLES.filter(c=>c.grp===g).forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.code;
+      o.textContent=c.label+' — Ø '+c.d+' mm';
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+})();
+
+document.getElementById('addBtn').addEventListener('click', addCable);
+document.getElementById('qty').addEventListener('keydown', e=>{ if(e.key==='Enter') addCable(); });
+
+function addCable(){
+  const code=document.getElementById('csel').value;
+  const qty=Math.max(1,parseInt(document.getElementById('qty').value)||1);
+  const c=CABLES.find(x=>x.code===code);
+  if(!c) return;
+  const ex=items.find(i=>i.code===code);
+  if(ex) ex.qty+=qty; else items.push({...c,qty});
+  document.getElementById('qty').value=1;
+  openDiag=null;
+  render();
+}
+
+function remove(code){ items=items.filter(i=>i.code!==code); openDiag=null; render(); }
+function setTab(n){ tab=n; openDiag=null; renderResults(); }
+function toggleDiag(key){ openDiag=openDiag===key?null:key; renderResults(); }
+
+function render(){ renderList(); renderResults(); }
+
+function renderList(){
+  const el=document.getElementById('clist');
+  if(!items.length){ el.innerHTML='<p style="color:var(--text3);font-size:13px;padding:8px 0">No hay cables añadidos.</p>'; return; }
+  let h='<table><thead><tr><th>Cable</th><th>Ø</th><th>Uds.</th><th>Área</th><th></th></tr></thead><tbody>';
+  items.forEach(it=>{
+    h+=`<tr>
+      <td>${it.label}</td>
+      <td style="color:var(--text2)">${it.d}mm</td>
+      <td><span class="tag">${it.qty}</span></td>
+      <td style="color:var(--text2)">${(tA(it.d)*it.qty).toFixed(2)}mm²</td>
+      <td><button class="xbtn" onclick="remove('${it.code}')">×</button></td>
+    </tr>`;
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function getSols(){
+  const totA=items.reduce((s,i)=>s+tA(i.d)*i.qty,0);
+  const totC=items.reduce((s,i)=>s+i.qty,0);
+  const ff=totC===1?0.5:0.33;
+  const s1=TUBES.filter(t=>tA(t.d)*ff>=totA).map(t=>({tubes:[t],ca:tA(t.d),fill:totA/tA(t.d)*100})).sort((a,b)=>a.ca-b.ca);
+  const s2=[];
+  for(let i=0;i<TUBES.length;i++) for(let j=i;j<TUBES.length;j++){
+    const ca=tA(TUBES[i].d)+tA(TUBES[j].d);
+    if(ca*0.33>=totA) s2.push({tubes:[TUBES[i],TUBES[j]],ca,fill:totA/ca*100});
+  }
+  s2.sort((a,b)=>a.ca-b.ca);
+  const s3=[];
+  for(let i=0;i<TUBES.length;i++) for(let j=i;j<TUBES.length;j++) for(let k=j;k<TUBES.length;k++){
+    const ca=tA(TUBES[i].d)+tA(TUBES[j].d)+tA(TUBES[k].d);
+    if(ca*0.33>=totA) s3.push({tubes:[TUBES[i],TUBES[j],TUBES[k]],ca,fill:totA/ca*100});
+  }
+  s3.sort((a,b)=>a.ca-b.ca);
+  return{s1:s1.slice(0,10),s2:s2.slice(0,8),s3:s3.slice(0,8),ff,totA,totC};
+}
+
+function tubeLabel(tubes){
+  const cnt={};
+  tubes.forEach(t=>{if(!cnt[t.code])cnt[t.code]={t,n:0};cnt[t.code].n++;});
+  return Object.values(cnt).map(({t,n})=>(n>1?n+'× ':'')+t.name+' (Ø'+t.d+'mm)').join(' + ');
+}
+function tubeRef(tubes){
+  const cnt={};
+  tubes.forEach(t=>{if(!cnt[t.code])cnt[t.code]={t,n:0};cnt[t.code].n++;});
+  return 'Ref: '+Object.values(cnt).map(({t,n})=>(n>1?n+'× ':'')+t.code).join(', ');
+}
+
+// Colores por tipo
+function cColor(label){
+  if(label.includes('TRI-RATED')) return {f:'#1D9E75',s:'#0F6E56'};
+  if(label.includes('EPR')) return {f:'#EF9F27',s:'#854F0B'};
+  return {f:'#4A90D9',s:'#185FA5'};
+}
+
+// Empaquetado de círculos
+function pack(TR, clist){
+  const placed=[];
+  const sorted=[...clist].sort((a,b)=>b.r-a.r);
+  for(const c of sorted){
+    let px=null,py=null;
+    const step=Math.max(0.8,c.r*0.9);
+    outer:
+    for(let ring=0;ring<=TR*2.5;ring+=step){
+      const nA=ring<step*0.3?1:Math.max(8,Math.ceil(2*pi*ring/step));
+      for(let ai=0;ai<nA;ai++){
+        const ang=2*pi*ai/nA+(Math.floor(ring/step)%2===0?0:pi/nA);
+        const x=ring*Math.cos(ang),y=ring*Math.sin(ang);
+        if(Math.hypot(x,y)+c.r>TR-0.5) continue;
+        let ok=true;
+        for(const p of placed){
+          if(Math.hypot(x-p.x,y-p.y)<c.r+p.r+0.6){ok=false;break;}
+        }
+        if(ok){px=x;py=y;break outer;}
+      }
+    }
+    placed.push({x:px??0,y:py??0,r:c.r,f:c.f,s:c.s,ov:px===null});
+  }
+  return placed;
+}
+
+function distribute(tubes,allC){
+  const caps=tubes.map(t=>({rem:tA(t.d)*0.33,list:[]}));
+  const sorted=[...allC].sort((a,b)=>b.r-a.r);
+  for(const c of sorted){
+    let best=0;
+    for(let i=1;i<caps.length;i++) if(caps[i].rem>caps[best].rem) best=i;
+    caps[best].rem-=pi*c.r**2;
+    caps[best].list.push(c);
+  }
+  return caps.map(c=>c.list);
+}
+
+function expandCables(){
+  const r=[];
+  items.forEach(it=>{
+    const col=cColor(it.label);
+    for(let i=0;i<it.qty;i++) r.push({d:it.d,r:it.d/2,label:it.label,f:col.f,s:col.s});
+  });
+  return r;
+}
+
+function drawTubeSVG(tube,clist,DR,label){
+  const scale=DR/(tube.d/2);
+  const W=DR*2+40, H=DR*2+52;
+  const cx=W/2, cy=DR+18;
+  const dispC=clist.map(c=>({r:c.d/2*scale,f:c.f,s:c.s}));
+  const packed=pack(DR,dispC);
+  const occ=(clist.reduce((s,c)=>s+tA(c.d),0)/tA(tube.d)*100).toFixed(1);
+  let circles=packed.map(p=>`<circle cx="${(cx+p.x).toFixed(1)}" cy="${(cy+p.y).toFixed(1)}" r="${Math.max(1.2,p.r-0.5).toFixed(1)}" fill="${p.f}" fill-opacity="0.85" stroke="${p.s}" stroke-width="1"/>`).join('');
+  return `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+    ${label?`<text x="${cx}" y="13" text-anchor="middle" fill="#7777aa" font-size="11" font-family="monospace">${label}</text>`:''}
+    <circle cx="${cx}" cy="${cy}" r="${DR+3}" fill="#1a1a2e"/>
+    <circle cx="${cx}" cy="${cy}" r="${DR}" fill="#12122a" stroke="#4a4a6a" stroke-width="2"/>
+    ${circles}
+    <text x="${cx}" y="${cy+DR+14}" text-anchor="middle" fill="#aaaacc" font-size="11" font-family="monospace">${tube.name}</text>
+    <text x="${cx}" y="${cy+DR+28}" text-anchor="middle" fill="#666688" font-size="10" font-family="monospace">Ø${tube.d}mm · ${clist.length} cable${clist.length!==1?'s':''} · ${occ}% ocup.</text>
+  </svg>`;
+}
+
+function buildDiagHTML(sol){
+  const allC=expandCables();
+  const nT=sol.tubes.length;
+  const dist=nT===1?[allC]:distribute(sol.tubes,allC);
+  const DR=nT===1?88:nT===2?72:60;
+  const labels=nT>1?sol.tubes.map((_,i)=>`Tubo ${i+1}`):[''];
+  const svgs=sol.tubes.map((t,i)=>drawTubeSVG(t,dist[i]||[],DR,labels[i])).join('');
+  const types=[...new Set(items.map(it=>it.label.includes('TRI-RATED')?'TRI-RATED NE PVC':it.label.includes('EPR')?'FLEX 1,8/3kV EPR':'FLEX 450/750'))];
+  const cmap={'TRI-RATED NE PVC':'#1D9E75','FLEX 450/750':'#4A90D9','FLEX 1,8/3kV EPR':'#EF9F27'};
+  const legend=types.length>1?`<div class="legend">${types.map(t=>`<span class="leg-item"><span class="leg-dot" style="background:${cmap[t]}"></span>${t}</span>`).join('')}</div>`:'';
+  const note=nT>1?`<p class="diag-note">Distribución orientativa. El instalador puede redistribuir los cables libremente.</p>`:'';
+  return `<div class="diag-panel"><div class="diag-inner">${svgs}</div>${legend}${note}</div>`;
+}
+
+function renderResults(){
+  const el=document.getElementById('results');
+  if(!items.length){
+    el.innerHTML='<div class="panel"><div class="empty">Añade cables en el panel izquierdo para calcular las soluciones de tubo corrugado.</div></div>';
+    return;
+  }
+  const sol=getSols();
+  const tabData=[{n:1,label:'1 tubo',sols:sol.s1},{n:2,label:'2 tubos',sols:sol.s2},{n:3,label:'3 tubos',sols:sol.s3}];
+
+  let h=`<div class="panel">
+  <div class="summary-grid">
+    ${[['Total cables',sol.totC,''],['Área total',sol.totA.toFixed(2),'mm²'],['Factor llenado',Math.round(sol.ff*100),'%'],['Sección mínima',(sol.totA/sol.ff).toFixed(1),'mm²']].map(([l,v,u])=>`<div class="scard"><div class="lbl">${l}</div><div class="val">${v}<span class="unit"> ${u}</span></div></div>`).join('')}
+  </div>
+  <div class="tabs">`;
+  tabData.forEach(({n,label,sols:ts})=>{
+    h+=`<button class="tbtn${tab===n?' active':''}" onclick="setTab(${n})">${label} <span class="tcnt">${ts.length}</span></button>`;
+  });
+  h+='</div><div class="sols">';
+  const active=tabData.find(t=>t.n===tab);
+  if(!active.sols.length){
+    h+=`<div class="nosol">No hay combinación de ${tab} tubo${tab>1?'s':''} disponibles en el catálogo para este conjunto de cables.</div>`;
+  } else {
+    active.sols.forEach((s,idx)=>{
+      const lim=(s.tubes.length===1?sol.ff:0.33)*100;
+      const bp=Math.min(s.fill/lim*100,100);
+      const bc=bp<70?'#1D9E75':'#BA7517';
+      const best=idx===0;
+      const key=`${tab}-${idx}`;
+      const isOpen=openDiag===key;
+      h+=`<div class="sol-card${best?' best':''}">
+        <div class="sol-header" onclick="toggleDiag('${key}')">
+          <div class="sol-info">
+            <div class="sol-name">${tubeLabel(s.tubes)}${best?'<span class="badge">Más compacto</span>':''}</div>
+            <div class="sol-ref">${tubeRef(s.tubes)}</div>
+          </div>
+          <div class="sol-right">
+            <div class="pct">${s.fill.toFixed(1)}%</div>
+            <div class="pct-lbl">ocupación int.</div>
+            <div class="bar"><div class="barf" style="width:${bp.toFixed(1)}%;background:${bc}"></div></div>
+          </div>
+          <div class="arrow">${isOpen?'▲':'▼'}</div>
+        </div>
+        ${isOpen?buildDiagHTML(s):''}
+      </div>`;
+    });
+  }
+  h+=`</div>
+  <p class="norm-note">Normativa REBT: factor de llenado 33% para múltiples cables, 50% para cable único. El área de cada cable se calcula a partir del diámetro exterior máximo indicado por el fabricante.</p>
+  </div>`;
+  el.innerHTML=h;
+}
+</script>
+</body>
+</html>
